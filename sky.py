@@ -4,6 +4,7 @@ from settings import LAYERS
 from support import importFolder
 from sprite import Generic
 from random import randint
+from random import choice
 
 class Drop(Generic):
     def __init__(self, pos, surf, groups, z, moving):
@@ -39,10 +40,19 @@ class Rain:
         self.floor_w, self.floor_h = pygame.image.load("..graphics/wolrd/ground.png").get_size()
     
     def createFloor(self):
-        Drop()
+        Drop(surf=choice (self.rainFloor),
+            pos= (randint(0,self.floor_w), randint(0, self.floor_h)),
+            moving= False, 
+            groups = self.allSprites, 
+            z= LAYERS['rain floor'])
     
     def createDrops(self):
-        Drop()
+        Drop(surf=choice (self.raindDrops),
+            pos= (randint(0,self.floor_w), randint(0, self.floor_h)),
+            moving= False, 
+            groups = self.allSprites, 
+            z= LAYERS['rain drops'])
+        
     def update(self):
         self.createFloor()
         self.createDrops()
