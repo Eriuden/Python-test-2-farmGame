@@ -1,7 +1,9 @@
 import pygame
+from pygame.sprite import _Group
 from settings import *
 from pytmx.util_pygame import load_pygame
 from support import *
+from random import choice
 
 class SoilTile(pygame.sprite.Sprite):
     def __init__(self, position, surface, groups):
@@ -10,14 +12,22 @@ class SoilTile(pygame.sprite.Sprite):
         self.rect = self.image.getRect(topleft = position)
         self.z = LAYERS["soil"]
 
+class WaterTile(pygame.sprite.Sprite):
+    def __init__(self, pos, surf, groups):
+        super().__init__(groups)
+        self.image = surf 
+        self.rect = self.image.get_rect(topleft = pos)
+        self.z = LAYERS["soil water"]
 class SoilLayer:
     def __init__(self, allSprites):
         
         self.allSprites = allSprites
         self.soilSprite = pygame.sprite.Group()
+        self.waterSprite = pygame.sprite.Group()
 
         self.soilSurface = pygame.image.load("./graphics/soil/o.png")
         self.soilSurfaces =  importFolderDict("./graphics/soil")
+        self.water_surfs = importFolder("../graphics/soil_water")
 
         self.createSoilGrid()
         self.createHitRects()
@@ -53,6 +63,27 @@ class SoilLayer:
                 if "F" in self.grid[y][x]:
                     self.grid[y][x].append("X")
                     self.createSoilTiles()
+
+    def water(self, targetPos):
+        for soilSprites in self.soilSprite.sprites():
+            if soilSprites.rect.collidepoint(targetPos):
+                x = soilSprites.rect.x  
+                y = soilSprites.rect.y 
+                self.grid[y][x].append("W")
+
+                pos = soilSprites.rect.topleft
+                surf = choice(self.water_surfs)
+
+                WaterTile(pos, surf, [ self.allSprites, self.waterSprite])
+
+    def removeWater(self):
+        for sprite in self.waterSprite.sprites():
+            sprite.kill()
+        for row in self.grid:
+            for cell in row:
+                if "W" in cell:
+                    cell.remove("W")
+
     def createSoilTiles(self):
         self.soilSprite.empty()
         for indexRow,row in enumerate(self.grid):
@@ -69,34 +100,31 @@ class SoilLayer:
                     #toutes directions
                     if all((t,r,b,l)): tyleType = "x"
 
+                    # horizontal
+
                     if l and not any((t,r,b)): tyleType = "r"
                     if r and not any((t,l,b)): tyleType = "l"
                     if r and l and not any((t,b)): tyleType = "lr"
 
-                    # horizontal
+                    #vertical
 
                     if b and not any((t,r,l)): tyleType = "t"
                     if t and not any((l,r,b)): tyleType = "b"
                     if b and t and not any((l,r)): tyleType = "tb"
 
-                    #vertical
+                    #coins
 
                     if l and b and not any((r,t)): tyleType = "tr"
                     if r and t and not any((t,l)): tyleType = "tl"
                     if l and t and not any((r,b)): tyleType = "br"
                     if r and t and not any((b,l)): tyleType = "bl"
 
-                    #coins
+                    # formes en T
 
                     if all((t,b,r)) and not l: tyleType = "tbr"
                     if all((t,b,l)) and not r: tyleType = "tbl"
                     if all((t,l,r)) and not b: tyleType = "lrb"
                     if all((l,b,r)) and not t: tyleType = "lrt"
-
-                    # formes en T
-
-                    
-
 
 
 

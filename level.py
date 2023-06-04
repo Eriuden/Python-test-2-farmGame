@@ -92,6 +92,8 @@ class Level:
  
     def reset(self):
 
+        self.soilLayer.removeWater()
+
         for tree in self.treeSprites.sprites():
             for apple in tree.appleSprites.sprites():
                 apple.kill()    

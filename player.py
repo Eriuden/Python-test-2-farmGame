@@ -65,7 +65,7 @@ class Player(pygame.sprite.Sprite):
                 if tree.rect.collidepoint(self.targetPos):
                     tree.damage()
         elif self.selectedTools == "water":
-            pass
+            self.soilLayer.water(self.targetPos)
 
     def getTargetPos(self):
         self.targetPos = self.rect.center + PLAYER_TOOL_OFFSET[self.status.split("_"[0])]
