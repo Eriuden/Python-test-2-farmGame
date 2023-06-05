@@ -23,10 +23,11 @@ class Level:
         self.collisionSprites = pygame.sprite.Group()
         self.treeSprites = pygame.sprite.Group()
         self.interactionSprites = pygame.sprite.Group()
+
         self.setup()
         self.overlay = Overlay(self.player)
         self.transition = Transition(self.reset, self.player)
-        self.soilLayer = SoilLayer(self.all_sprites)
+        self.soilLayer = SoilLayer(self.all_sprites, self.collisionSprites)
 
         self.rain = Rain(self.all_sprites)
         self.raining = randint(0,10)  > 5
@@ -97,6 +98,8 @@ class Level:
         self.player.itemInventory[item] += 1
  
     def reset(self):
+
+        self.soilLayer.updatePlants()
 
         self.soilLayer.removeWater()
         self.raining = randint(0,10) > 5
