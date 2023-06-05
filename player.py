@@ -71,7 +71,7 @@ class Player(pygame.sprite.Sprite):
         self.targetPos = self.rect.center + PLAYER_TOOL_OFFSET[self.status.split("_"[0])]
 
     def useSeeds(self):
-        print(self.selectedSeed)
+        self.soilLayer.plantSeed(self.targetPos, self.selectedSeed)
 
     def importAssets(self):
         self.animations = {'up': [],'down': [],'left': [],'right': [],
