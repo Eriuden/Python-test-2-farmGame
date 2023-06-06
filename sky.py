@@ -6,6 +6,24 @@ from sprite import Generic
 from random import randint
 from random import choice
 
+class Sky:
+    def __init__(self):
+        self.displaySurface = pygame.display.get_surface()
+        self.fullSurf = pygame.Surface((SCREEN_WIDTH, SCREEN_HEIGHT))
+
+        self.startColor = [255,255,255]
+        self.endColor = (38,101,189)
+
+    def display(self,dt):
+        for index,value in enumerate(self.endColor):
+            # si l'index de la couleur est sup à la value
+            # on la réduit au fil du temps pour simuler la course du soleil
+            if self.startColor[index] > value:
+                self.startColor[index] -= 2 * dt 
+
+        self.fullSurf.fill(self.startColor)
+        self.displaySurface.blit(self.fullSurf, (0,0), special_flags= pygame.BLEND_RGBA_MULT)
+
 class Drop(Generic):
     def __init__(self, pos, surf, groups, z, moving):
         super().__init__(pos, surf, groups, z, moving)

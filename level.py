@@ -2,12 +2,12 @@ import pygame
 from settings import *
 from player import Player
 from overlay import Overlay
-from sprite import Generic, Water, WildFolwer, Tree, Interaction
+from sprite import Generic, Water, WildFolwer, Tree, Interaction, Particle
 from pytmx.util_pygame import load_pygame
 from support import *
 from transition import Transition
 from soil import SoilLayer
-from sky import Rain
+from sky import Rain, Sky
 from random import randint
 
 
@@ -32,6 +32,7 @@ class Level:
         self.rain = Rain(self.all_sprites)
         self.raining = randint(0,10)  > 5
         self.soilLayer.raining = self.raining
+        self.sky = Sky()
         
         
     def setup(self):
@@ -99,19 +100,33 @@ class Level:
  
     def reset(self):
 
+        #évolution des plantes
         self.soilLayer.updatePlants()
 
+        # humidité du sol
         self.soilLayer.removeWater()
         self.raining = randint(0,10) > 5
-
         self.soilLayer.raining = self.raining
         if self.raining:
             self.soilLayer.waterAll()
 
+        #pommes dans l'arbre
         for tree in self.treeSprites.sprites():
             for apple in tree.appleSprites.sprites():
                 apple.kill()    
             tree.createFruit()
+        
+        #ciel
+        self.sky.startColor = [255,255,255]
+
+    def plant_collision(self):
+        if self.soilLayer.plantSprite:
+            for plant in self.SoilLayer.plantSprites.sprites():
+                if plant.harvestable and plant.rect.colliderect(self.player.hitbox):
+                    self.playerAdd(plant.plantType)
+                    plant.kill()
+                    Particle(plant.rect.topLeft, plant.image, self.all_sprites, z = LAYERS["main"])
+                    self.soilLayer.grid[plant.rect.centerY // TILE_SIZE][plant.rect.centerx // TILE_SIZE].remove("P")
 
     def run(self,datatime):
         self.display_surface.fill("black")
@@ -125,7 +140,6 @@ class Level:
 
         if self.player.sleep:
             self.transition.play()
-        
 
 class Camera(pygame.sprite.Group):
     def __init__(self):
