@@ -9,6 +9,7 @@ from transition import Transition
 from soil import SoilLayer
 from sky import Rain, Sky
 from random import randint
+from menu import menu
 
 
 class Level:
@@ -33,6 +34,11 @@ class Level:
         self.raining = randint(0,10)  > 5
         self.soilLayer.raining = self.raining
         self.sky = Sky()
+
+        #magasin
+
+        self.menu = menu(self.player, self.toggleShop)
+        self.shopActive = False
         
         
     def setup(self):
@@ -81,11 +87,14 @@ class Level:
                 group = self.all_sprites,
                 collisionSprites= self.collisionSprites,
                 trees = self.treeSprites,
-                Interaction = self.interactionSprites)
-                SoilLayer = self.soilLayer
+                Interaction = self.interactionSprites,
+                SoilLayer = self.soilLayer,
+                toggleShop = self.toggleShop())
+
             if obj.name == "Bed" :
                 Interaction((obj.x,obj.y), (obj.width, obj.height),self.interactionSprites, obj.name )
-
+            if obj.name =="Trader":
+                Interaction((obj.x,obj.y), (obj.width, obj.height),self.interactionSprites, obj.name )  
 
         self.player = Player((640,360), self.all_sprites, self.collisionSprites)
         Generic(
@@ -94,7 +103,10 @@ class Level:
             groups = self.all_sprites,
             z = LAYERS["ground"]
         )
-        
+
+    def toggleShop(self):
+        self.shopActive = not self.shopActive   
+
     def playerAdd(self,item):
         self.player.itemInventory[item] += 1
  
@@ -131,12 +143,22 @@ class Level:
     def run(self,datatime):
         self.display_surface.fill("black")
         self.all_sprites.customDraw(self.player)
-        self.all_sprites.update(datatime)
 
+        #MAJ
+        if self.shopActive:
+            self.menu.update()
+        else:
+            self.all_sprites.update(datatime)
+            self.plant_collision()
+
+        #météo
         self.overlay.display()
 
-        if self.raining:
+        if self.raining and not self.shopActive:
             self.rain.update()
+
+        #jour
+        self.sky.display(datatime)
 
         if self.player.sleep:
             self.transition.play()

@@ -3,8 +3,9 @@ from settings import *
 from support import *
 from timer import Timer
 
+
 class Player(pygame.sprite.Sprite):
-    def __init__(self, pos, group, collisionSprites, treeSprites, interaction, soilLayer):
+    def __init__(self, pos, group, collisionSprites, treeSprites, interaction, soilLayer, toggleShop):
         super().__init__(group)
 
         self.importAssets()
@@ -52,10 +53,17 @@ class Player(pygame.sprite.Sprite):
             "tomato": 0,
         }
 
+        self.seedInventory = {
+            "corn" : 5,
+            "tomato" : 5
+        }
+        self.money = 200
+
         self.treeSprites = treeSprites
         self.interaction = interaction
         self.sleep = False
         self.soilLayer = soilLayer
+        self.toggleShop = toggleShop
 
     def useTool(self):
         if self.selectedTools == "hoe":
@@ -71,7 +79,9 @@ class Player(pygame.sprite.Sprite):
         self.targetPos = self.rect.center + PLAYER_TOOL_OFFSET[self.status.split("_"[0])]
 
     def useSeeds(self):
-        self.soilLayer.plantSeed(self.targetPos, self.selectedSeed)
+        if self.seedInventory[self.selectedSeed] > 0:
+            self.soilLayer.plantSeed(self.targetPos, self.selectedSeed)
+            self.seedInventory[self.selectedSeed] -= 1
 
     def importAssets(self):
         self.animations = {'up': [],'down': [],'left': [],'right': [],
@@ -143,7 +153,7 @@ class Player(pygame.sprite.Sprite):
                 collidedInteractionSprite = pygame.sprite.spritecollide(self, self.interaction, False)
                 if collidedInteractionSprite:
                     if collidedInteractionSprite[0].name == "Trader":
-                        pass 
+                        self.toggleShop() 
                     else:
                         self.status = "left_idle"
                         self.sleep = True
