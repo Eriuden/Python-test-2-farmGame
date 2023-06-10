@@ -150,6 +150,7 @@ class Player(pygame.sprite.Sprite):
                 print(self.selectedSeed)
 
             if keys[pygame.K_RETURN]:
+                self.toggleShop()
                 collidedInteractionSprite = pygame.sprite.spritecollide(self, self.interaction, False)
                 if collidedInteractionSprite:
                     if collidedInteractionSprite[0].name == "Trader":

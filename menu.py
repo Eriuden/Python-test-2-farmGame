@@ -1,5 +1,6 @@
 import pygame
 from settings import *
+from timer import Timer
 
 class Menu:
     def __init__(self, player, toggleMenu):
@@ -19,19 +20,72 @@ class Menu:
         self.selffOrder = len(self.player.itemInventory) -1
         self.setup()
 
+        #Mouvement
+        self.index = 0
+        self.timer = Timer(200)
+
+    def displayMoney(self):
+        #l'indicateur d'argent
+        textSurf = self.font.render(f'{self.player.money}G', False, "Black")
+        textRect = textSurf.get_rect(topright= (SCREEN_WIDTH /2, SCREEN_HEIGHT - 20))
+
+        pygame.draw.rect(self.displaySurface, "White", textRect.inflate(10,10),0,6)
+        self.displaySurface.blit(textSurf, textRect)
+
     def setup(self):
         self.textSurfaces = []
-        #dernier élément au 08/06
-        self.totalHeight
+        self.totalHeight = 0
+
         for item in self.options:
             textSurfaces = self.font.render(item, False, "Black")
             self.textSurfaces.append(textSurfaces)
+            self.totalHeight += textSurfaces.get_height()+ (self.padding * 2)
+        
+        self.totalHeight += (len(self.textSurfaces) - 1) * self.space 
+        self.menu_top = SCREEN_HEIGHT / 2 - self.totalHeight / 2
+        self.mainRect = pygame.Rect(SCREEN_WIDTH / 2 - self.width / 2 ,self.menu_top,self.width,self.totalHeight)
 
     def input(self):
         keys = pygame.key.get_pressed()
+        self.timer.update()
+
         if keys[pygame.K_ESCAPE]:
             self.toggleMenu()
+
+        if not self.timer.activate:
+            if keys[pygame.K_UP]:
+                self.index -= 1
+                self.timer.activate()
+
+            if keys[pygame.K_DOWN]:
+                self.index += 1
+                self.timer.activate()
+
+    def showEntries(self, textSurface, amount, top, selected):
+        # background
+        bgRect= pygame.Rect(self.mainRect.left,top,self.width, textSurface.get_height() + (self.padding * 2))
+        pygame.draw.rect(self.displaySurface, "White", bgRect, 0, 4)
+
+        # texte
+        textRect = textSurface.get_rect(midleft = (self.mainRect.left + 20, bgRect.centery))
+        self.displaySurface.blit(textSurface,textRect)
+
+        # montant
+        amountSurface = self.font.render(amount, False, "Black")
+        amountRect = amountSurface.get_rect(midright = (self.mainRect.right - 20, bgRect.centery))
+        self.displaySurface.blit(amountSurface, amountRect)
+
+        #selected
+        if selected:
+            pygame.draw.rect(self.displaySurface, "black", bgRect, 4,4)
+
     def update(self):
         self.input()
+        self.displayMoney()
+        
         for textIndex,textSurface in enumerate(self.textSurfaces):
-            self.displaySurface.blit(textSurface,(100, textIndex * 50))
+            top = self.mainRect.top + textIndex * (textSurface.get_height() + (self.padding * 2) + self.space)
+            amountList = list(self.player.itemsInventory.values()) + list(self.player.seedInventory.values())
+            amount = amountList[textIndex]
+            self.showEntries(textSurface, amount, top, self.index == textIndex)
+            
