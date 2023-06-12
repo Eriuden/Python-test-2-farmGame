@@ -39,6 +39,12 @@ class Level:
 
         self.menu = menu(self.player, self.toggleShop)
         self.shopActive = False
+
+        self.success = pygame.mixer.Sound("../audio/success.wav")
+        self.success.set_volume(0.3)
+        self.music = pygame.mixer.Sound("../audio/music.mp3")
+        self.music.play(loops= -1)
+        self.music.set_volume(0.2)
         
         
     def setup(self):
@@ -109,6 +115,7 @@ class Level:
 
     def playerAdd(self,item):
         self.player.itemInventory[item] += 1
+        self.success.play()
  
     def reset(self):
 

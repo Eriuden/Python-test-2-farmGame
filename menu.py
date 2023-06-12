@@ -17,7 +17,7 @@ class Menu:
 
         # entries
         self.options = list(self.player.itemsInventory.keys()) + list(self.player.seedInventory.keys())
-        self.selffOrder = len(self.player.itemInventory) -1
+        self.sellBorder = len(self.player.itemInventory) -1
         self.setup()
 
         #Mouvement
@@ -45,6 +45,10 @@ class Menu:
         self.menu_top = SCREEN_HEIGHT / 2 - self.totalHeight / 2
         self.mainRect = pygame.Rect(SCREEN_WIDTH / 2 - self.width / 2 ,self.menu_top,self.width,self.totalHeight)
 
+        # texte achat ventes
+        self.buyText = pygame.font.render("buy",False,"Black")
+        self.sellText = pygame.font.render("sell",False,"Black")
+
     def input(self):
         keys = pygame.key.get_pressed()
         self.timer.update()
@@ -60,6 +64,30 @@ class Menu:
             if keys[pygame.K_DOWN]:
                 self.index += 1
                 self.timer.activate()
+
+            if keys[pygame.K_SPACE]:
+                self.timer.activate()
+
+                currentItem = self.options[self.index]
+
+                #sell
+                if self.index <= self.sellBorder:
+                    if self.player.itemInventory[currentItem] > 0:
+                        self.player.itemInventory[currentItem] -= 1
+                        self.player.money += SALE_PRICES[currentItem]
+
+
+                #buy
+                else:
+                    seedPrice = PURCHASE_PRICES[currentItem]
+                    if self.player.money >= seedPrice:
+                        self.player.seedInventory[currentItem] +=1
+                        self.player.money -= seedPrice
+
+            if self.index < 0:
+                self.index = len(self.options) - 1
+            if self.index > len(self.options):
+                self.index = 0
 
     def showEntries(self, textSurface, amount, top, selected):
         # background
@@ -78,6 +106,13 @@ class Menu:
         #selected
         if selected:
             pygame.draw.rect(self.displaySurface, "black", bgRect, 4,4)
+            if self.index <= self.sellBorder: #vente
+                positionRect = self.sellText.get_Rect(midleft = (self.mainRect.left + 150, bgRect.centery))
+                self.displaySurface.blit(self.sellText, (self.sellText,positionRect))
+
+            else: #achat
+                positionRect = self.buyText.get_Rect(midleft = (self.mainRect.left + 150, bgRect.centery))
+                self.displaySurface.blit(self.buyText, (self.buyText,positionRect))
 
     def update(self):
         self.input()
